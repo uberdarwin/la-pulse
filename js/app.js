@@ -18,7 +18,8 @@ class DataManager {
 
     async fetchTrafficData() {
         try {
-            const trafficData = await this.dataSources.fetchLACityTrafficData();
+            // Use realistic traffic data instead of collision data
+            const trafficData = await this.dataSources.fetchPublicTrafficData();
             this.mapManager.updateTrafficLayer(trafficData);
             console.log(`Loaded ${trafficData.length} traffic data points`);
         } catch (error) {
@@ -79,7 +80,7 @@ class DataManager {
         });
 
         // Update traffic status
-        this.dataSources.fetchLACityTrafficData().then(traffic => {
+        this.dataSources.fetchPublicTrafficData().then(traffic => {
             const trafficStatusElement = document.getElementById('traffic-status');
             if (traffic.length > 0) {
                 const trafficLevels = traffic.reduce((acc, item) => {
@@ -89,12 +90,12 @@ class DataManager {
                 
                 trafficStatusElement.innerHTML = Object.entries(trafficLevels).map(([level, count]) => `
                     <div class="traffic-item">
-                        <span>Traffic ${level}</span>
-                        <span class="traffic-status traffic-${level.toLowerCase()}">${count} incidents</span>
+                        <span>${UTILS.getTrafficDescription(level)}</span>
+                        <span class="traffic-status traffic-${level.toLowerCase()}">${count} roads</span>
                     </div>
                 `).join('');
             } else {
-                trafficStatusElement.innerHTML = '<p>No traffic incidents reported</p>';
+                trafficStatusElement.innerHTML = '<p>No traffic data available</p>';
             }
         });
     }

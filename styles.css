@@ -186,7 +186,12 @@ button:active {
     font-weight: bold;
 }
 
-.traffic-good {
+.traffic-empty {
+    background-color: #FF69B4;
+    color: white;
+}
+
+.traffic-light {
     background-color: #4caf50;
     color: white;
 }
@@ -198,6 +203,11 @@ button:active {
 
 .traffic-heavy {
     background-color: #f44336;
+    color: white;
+}
+
+.traffic-severe {
+    background-color: #8B0000;
     color: white;
 }
 

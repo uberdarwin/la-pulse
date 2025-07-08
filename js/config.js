@@ -52,10 +52,18 @@ const CONFIG = {
     // Map Styles
     STYLES: {
         TRAFFIC_COLORS: {
-            LIGHT: '#4CAF50',
-            MODERATE: '#FF9800',
-            HEAVY: '#F44336',
-            SEVERE: '#9C27B0'
+            EMPTY: '#FF69B4',      // Pink for empty roads
+            LIGHT: '#4CAF50',      // Green for general traffic
+            MODERATE: '#FF9800',   // Orange for medium traffic
+            HEAVY: '#F44336',      // Dark red for jammed streets
+            SEVERE: '#8B0000'      // Darker red for severe jams
+        },
+        TRAFFIC_SPEEDS: {
+            EMPTY: 55,      // 55+ mph
+            LIGHT: 35,      // 35-55 mph
+            MODERATE: 20,   // 20-35 mph
+            HEAVY: 10,      // 10-20 mph
+            SEVERE: 5       // 0-10 mph
         },
         EVENT_COLORS: {
             SPORTS: '#FF5722',
@@ -102,11 +110,33 @@ const UTILS = {
     // Get traffic color based on congestion level
     getTrafficColor: (level) => {
         switch(level.toLowerCase()) {
+            case 'empty': return CONFIG.STYLES.TRAFFIC_COLORS.EMPTY;
             case 'light': return CONFIG.STYLES.TRAFFIC_COLORS.LIGHT;
             case 'moderate': return CONFIG.STYLES.TRAFFIC_COLORS.MODERATE;
             case 'heavy': return CONFIG.STYLES.TRAFFIC_COLORS.HEAVY;
             case 'severe': return CONFIG.STYLES.TRAFFIC_COLORS.SEVERE;
             default: return CONFIG.STYLES.TRAFFIC_COLORS.MODERATE;
+        }
+    },
+    
+    // Get traffic level based on speed
+    getTrafficLevelFromSpeed: (speed) => {
+        if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.EMPTY) return 'empty';
+        if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.LIGHT) return 'light';
+        if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.MODERATE) return 'moderate';
+        if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.HEAVY) return 'heavy';
+        return 'severe';
+    },
+    
+    // Get traffic level description
+    getTrafficDescription: (level) => {
+        switch(level.toLowerCase()) {
+            case 'empty': return 'Empty Roads';
+            case 'light': return 'Light Traffic';
+            case 'moderate': return 'Moderate Traffic';
+            case 'heavy': return 'Heavy Traffic';
+            case 'severe': return 'Severe Congestion';
+            default: return 'Unknown';
         }
     }
 };

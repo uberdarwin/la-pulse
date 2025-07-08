@@ -98,19 +98,23 @@ class MapManager {
     }
 
     addTrafficMarker(data) {
+        const color = UTILS.getTrafficColor(data.level);
+        const radius = data.level === 'severe' ? 12 : data.level === 'heavy' ? 10 : 8;
+        
         const marker = L.circleMarker([data.lat, data.lng], {
-            color: UTILS.getTrafficColor(data.level),
-            fillColor: UTILS.getTrafficColor(data.level),
+            color: color,
+            fillColor: color,
             fillOpacity: 0.8,
-            radius: 8,
+            radius: radius,
             weight: 2
         });
 
         marker.bindPopup(`
             <div>
-                <h4>Traffic: ${data.level}</h4>
+                <h4>${UTILS.getTrafficDescription(data.level)}</h4>
                 <p><strong>Location:</strong> ${data.location}</p>
-                <p><strong>Speed:</strong> ${data.speed || 'N/A'} mph</p>
+                <p><strong>Current Speed:</strong> ${data.speed} mph</p>
+                <p><strong>Condition:</strong> ${data.level.charAt(0).toUpperCase() + data.level.slice(1)}</p>
                 <p><strong>Updated:</strong> ${UTILS.formatDate(data.timestamp)}</p>
             </div>
         `);
