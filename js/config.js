@@ -15,6 +15,11 @@ const CONFIG = {
             center: [34.0394, -118.1695],
             radius: 2 // miles
         },
+        SUNSET_BLVD: {
+            name: "Sunset Blvd Area",
+            center: [34.0775, -118.2653], // 1827 W. Sunset Blvd
+            radius: 1 // mile
+        },
         ECHO_PARK: {
             name: "Echo Park",
             center: [34.0778, -118.2607],
@@ -52,18 +57,21 @@ const CONFIG = {
     // Map Styles
     STYLES: {
         TRAFFIC_COLORS: {
-            EMPTY: '#FF69B4',      // Pink for empty roads
-            LIGHT: '#4CAF50',      // Green for general traffic
-            MODERATE: '#FF9800',   // Orange for medium traffic
-            HEAVY: '#F44336',      // Dark red for jammed streets
-            SEVERE: '#8B0000'      // Darker red for severe jams
+            EMPTY: '#98FB98',      // Pale green for empty roads
+            LIGHT: '#ADFF2F',      // GreenYellow for light traffic
+            MODERATE: '#FFD700',   // Gold for moderate traffic
+            HEAVY: '#FF4500',      // OrangeRed for heavy traffic
+            SEVERE: '#DC143C',     // Crimson for severe jams
+            CONGESTED: '#8B0000',  // Dark red for very heavy congestion
+            FREESPEED: '#00FA9A'   // MediumSpringGreen for free-flowing
         },
         TRAFFIC_SPEEDS: {
-            EMPTY: 55,      // 55+ mph
-            LIGHT: 35,      // 35-55 mph
-            MODERATE: 20,   // 20-35 mph
-            HEAVY: 10,      // 10-20 mph
-            SEVERE: 5       // 0-10 mph
+            FREESPEED: 65, // 65+ mph
+            EMPTY: 50,     // 50-65 mph
+            LIGHT: 35,     // 35-50 mph
+            MODERATE: 20,  // 20-35 mph
+            HEAVY: 10,     // 10-20 mph
+            SEVERE: 5      // 0-10 mph
         },
         EVENT_COLORS: {
             SPORTS: '#FF5722',
@@ -110,17 +118,20 @@ const UTILS = {
     // Get traffic color based on congestion level
     getTrafficColor: (level) => {
         switch(level.toLowerCase()) {
+            case 'freespeed': return CONFIG.STYLES.TRAFFIC_COLORS.FREESPEED;
             case 'empty': return CONFIG.STYLES.TRAFFIC_COLORS.EMPTY;
             case 'light': return CONFIG.STYLES.TRAFFIC_COLORS.LIGHT;
             case 'moderate': return CONFIG.STYLES.TRAFFIC_COLORS.MODERATE;
             case 'heavy': return CONFIG.STYLES.TRAFFIC_COLORS.HEAVY;
             case 'severe': return CONFIG.STYLES.TRAFFIC_COLORS.SEVERE;
+            case 'congested': return CONFIG.STYLES.TRAFFIC_COLORS.CONGESTED;
             default: return CONFIG.STYLES.TRAFFIC_COLORS.MODERATE;
         }
     },
     
     // Get traffic level based on speed
     getTrafficLevelFromSpeed: (speed) => {
+        if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.FREESPEED) return 'freespeed';
         if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.EMPTY) return 'empty';
         if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.LIGHT) return 'light';
         if (speed >= CONFIG.STYLES.TRAFFIC_SPEEDS.MODERATE) return 'moderate';
@@ -131,11 +142,13 @@ const UTILS = {
     // Get traffic level description
     getTrafficDescription: (level) => {
         switch(level.toLowerCase()) {
+            case 'freespeed': return 'Free Flow';
             case 'empty': return 'Empty Roads';
             case 'light': return 'Light Traffic';
             case 'moderate': return 'Moderate Traffic';
             case 'heavy': return 'Heavy Traffic';
             case 'severe': return 'Severe Congestion';
+            case 'congested': return 'Gridlock';
             default: return 'Unknown';
         }
     }

@@ -186,27 +186,37 @@ button:active {
     font-weight: bold;
 }
 
+.traffic-freespeed {
+    background-color: #00FA9A;
+    color: black;
+}
+
 .traffic-empty {
-    background-color: #FF69B4;
-    color: white;
+    background-color: #98FB98;
+    color: black;
 }
 
 .traffic-light {
-    background-color: #4caf50;
-    color: white;
+    background-color: #ADFF2F;
+    color: black;
 }
 
 .traffic-moderate {
-    background-color: #ff9800;
-    color: white;
+    background-color: #FFD700;
+    color: black;
 }
 
 .traffic-heavy {
-    background-color: #f44336;
+    background-color: #FF4500;
     color: white;
 }
 
 .traffic-severe {
+    background-color: #DC143C;
+    color: white;
+}
+
+.traffic-congested {
     background-color: #8B0000;
     color: white;
 }

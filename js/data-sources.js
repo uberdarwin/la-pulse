@@ -78,57 +78,70 @@ class DataSources {
     // Generate realistic traffic data based on actual LA roads
     generateRealisticTrafficData() {
         const laRoads = [
-            // Major highways
-            { name: 'I-5 North', lat: 34.0522, lng: -118.2437, baseSpeed: 45 },
-            { name: 'I-10 East', lat: 34.0194, lng: -118.2108, baseSpeed: 40 },
-            { name: 'US-101 South', lat: 34.0928, lng: -118.2849, baseSpeed: 35 },
-            { name: 'I-110 North', lat: 34.0211, lng: -118.2701, baseSpeed: 50 },
+            // Focus on Sunset Blvd area (1827 W. Sunset Blvd, 90026)
+            { name: 'Sunset Blvd @ Silver Lake', lat: 34.0775, lng: -118.2653, baseSpeed: 25, segments: 5 },
+            { name: 'Sunset Blvd @ Micheltorena', lat: 34.0772, lng: -118.2640, baseSpeed: 25, segments: 3 },
+            { name: 'Sunset Blvd @ Baxter', lat: 34.0770, lng: -118.2670, baseSpeed: 25, segments: 4 },
+            { name: 'Sunset Blvd @ Laveta Terrace', lat: 34.0773, lng: -118.2680, baseSpeed: 25, segments: 3 },
+            { name: 'Sunset Blvd @ Easterly Terrace', lat: 34.0776, lng: -118.2630, baseSpeed: 25, segments: 4 },
             
-            // Local streets in target areas
-            { name: 'Sunset Boulevard', lat: 34.0778, lng: -118.2607, baseSpeed: 25 },
-            { name: 'Hollywood Boulevard', lat: 34.1022, lng: -118.3267, baseSpeed: 20 },
-            { name: 'Wilshire Boulevard', lat: 34.0622, lng: -118.2557, baseSpeed: 30 },
-            { name: 'Santa Monica Boulevard', lat: 34.0901, lng: -118.2878, baseSpeed: 25 },
-            { name: 'Beverly Boulevard', lat: 34.0759, lng: -118.2870, baseSpeed: 30 },
-            { name: 'Melrose Avenue', lat: 34.0837, lng: -118.2865, baseSpeed: 20 },
+            // Cross streets near 1827 W. Sunset
+            { name: 'Micheltorena St', lat: 34.0785, lng: -118.2640, baseSpeed: 20, segments: 2 },
+            { name: 'Baxter St', lat: 34.0790, lng: -118.2670, baseSpeed: 20, segments: 2 },
+            { name: 'Laveta Terrace', lat: 34.0780, lng: -118.2680, baseSpeed: 15, segments: 2 },
+            { name: 'Silver Lake Blvd', lat: 34.0820, lng: -118.2650, baseSpeed: 30, segments: 3 },
+            { name: 'Glendale Blvd', lat: 34.0760, lng: -118.2580, baseSpeed: 35, segments: 4 },
             
-            // East LA specific streets
-            { name: 'Cesar Chavez Avenue', lat: 34.0394, lng: -118.1695, baseSpeed: 35 },
-            { name: 'Whittier Boulevard', lat: 34.0247, lng: -118.1581, baseSpeed: 30 },
-            { name: 'Atlantic Boulevard', lat: 34.0331, lng: -118.1803, baseSpeed: 25 },
+            // Nearby major streets
+            { name: 'Temple St', lat: 34.0781, lng: -118.2376, baseSpeed: 30, segments: 3 },
+            { name: 'Beverly Blvd', lat: 34.0759, lng: -118.2870, baseSpeed: 30, segments: 4 },
+            { name: 'Melrose Ave', lat: 34.0837, lng: -118.2865, baseSpeed: 20, segments: 3 },
+            { name: 'Santa Monica Blvd', lat: 34.0901, lng: -118.2878, baseSpeed: 25, segments: 4 },
+            { name: 'Hollywood Blvd', lat: 34.1022, lng: -118.3267, baseSpeed: 20, segments: 5 },
             
-            // Echo Park area
-            { name: 'Echo Park Avenue', lat: 34.0778, lng: -118.2607, baseSpeed: 25 },
-            { name: 'Temple Street', lat: 34.0781, lng: -118.2376, baseSpeed: 30 }
+            // Highways affecting area
+            { name: 'US-101 North', lat: 34.0928, lng: -118.2849, baseSpeed: 55, segments: 2 },
+            { name: 'I-5 North', lat: 34.0522, lng: -118.2437, baseSpeed: 65, segments: 2 }
         ];
 
-        return laRoads.map(road => {
+        const trafficData = [];
+        
+        laRoads.forEach(road => {
             // Add realistic traffic variation
             const timeOfDay = new Date().getHours();
             const isRushHour = (timeOfDay >= 7 && timeOfDay <= 9) || (timeOfDay >= 17 && timeOfDay <= 19);
             const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
             
-            let speedMultiplier = 1;
-            if (isRushHour && !isWeekend) {
-                speedMultiplier = 0.3 + Math.random() * 0.4; // 30-70% of normal speed
-            } else if (isWeekend) {
-                speedMultiplier = 1.2 + Math.random() * 0.3; // 120-150% of normal speed
-            } else {
-                speedMultiplier = 0.8 + Math.random() * 0.4; // 80-120% of normal speed
+            // Create multiple segments per road
+            for (let i = 0; i < (road.segments || 1); i++) {
+                let speedMultiplier = 1;
+                if (isRushHour && !isWeekend) {
+                    speedMultiplier = 0.2 + Math.random() * 0.6; // 20-80% of normal speed
+                } else if (isWeekend) {
+                    speedMultiplier = 1.1 + Math.random() * 0.4; // 110-150% of normal speed
+                } else {
+                    speedMultiplier = 0.7 + Math.random() * 0.5; // 70-120% of normal speed
+                }
+                
+                const currentSpeed = Math.max(3, Math.floor(road.baseSpeed * speedMultiplier));
+                const level = UTILS.getTrafficLevelFromSpeed(currentSpeed);
+                
+                // Create segment with slight position variation
+                const segmentOffset = 0.001 * i; // Spread segments along the road
+                
+                trafficData.push({
+                    lat: road.lat + (Math.random() - 0.5) * 0.001 + segmentOffset,
+                    lng: road.lng + (Math.random() - 0.5) * 0.001 + segmentOffset,
+                    location: `${road.name} (Segment ${i + 1})`,
+                    speed: currentSpeed,
+                    level: level,
+                    timestamp: new Date().toISOString(),
+                    density: Math.floor(Math.random() * 100) + 1 // Traffic density 1-100
+                });
             }
-            
-            const currentSpeed = Math.max(5, Math.floor(road.baseSpeed * speedMultiplier));
-            const level = UTILS.getTrafficLevelFromSpeed(currentSpeed);
-            
-            return {
-                lat: road.lat + (Math.random() - 0.5) * 0.002, // Small position variation
-                lng: road.lng + (Math.random() - 0.5) * 0.002,
-                location: road.name,
-                speed: currentSpeed,
-                level: level,
-                timestamp: new Date().toISOString()
-            };
-        }).filter(item => this.isInTargetArea(item.lat, item.lng));
+        });
+        
+        return trafficData.filter(item => this.isInTargetArea(item.lat, item.lng));
     }
 
     // Fetch Dodgers schedule and events

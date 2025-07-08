@@ -99,14 +99,18 @@ class MapManager {
 
     addTrafficMarker(data) {
         const color = UTILS.getTrafficColor(data.level);
-        const radius = data.level === 'severe' ? 12 : data.level === 'heavy' ? 10 : 8;
+        const baseRadius = this.getRadiusFromLevel(data.level);
+        const densityMultiplier = Math.max(0.5, (data.density || 50) / 50);
+        const radius = Math.floor(baseRadius * densityMultiplier);
+        const opacity = Math.max(0.6, Math.min(1.0, (data.density || 50) / 100));
         
         const marker = L.circleMarker([data.lat, data.lng], {
-            color: color,
+            color: this.getDarkerColor(color),
             fillColor: color,
-            fillOpacity: 0.8,
+            fillOpacity: opacity,
             radius: radius,
-            weight: 2
+            weight: 2,
+            className: `traffic-marker traffic-${data.level}`
         });
 
         marker.bindPopup(`
@@ -114,6 +118,7 @@ class MapManager {
                 <h4>${UTILS.getTrafficDescription(data.level)}</h4>
                 <p><strong>Location:</strong> ${data.location}</p>
                 <p><strong>Current Speed:</strong> ${data.speed} mph</p>
+                <p><strong>Traffic Density:</strong> ${data.density || 'N/A'}%</p>
                 <p><strong>Condition:</strong> ${data.level.charAt(0).toUpperCase() + data.level.slice(1)}</p>
                 <p><strong>Updated:</strong> ${UTILS.formatDate(data.timestamp)}</p>
             </div>
@@ -122,6 +127,46 @@ class MapManager {
         this.layers.traffic.addLayer(marker);
         this.markers.traffic.push(marker);
         return marker;
+    }
+
+    getRadiusFromLevel(level) {
+        switch(level.toLowerCase()) {
+            case 'freespeed': return 6;
+            case 'empty': return 7;
+            case 'light': return 8;
+            case 'moderate': return 10;
+            case 'heavy': return 12;
+            case 'severe': return 15;
+            case 'congested': return 18;
+            default: return 8;
+        }
+    }
+
+    getDarkerColor(color) {
+        // Convert hex to RGB, darken by 20%, convert back to hex
+        const rgb = this.hexToRgb(color);
+        if (rgb) {
+            const darker = {
+                r: Math.floor(rgb.r * 0.8),
+                g: Math.floor(rgb.g * 0.8),
+                b: Math.floor(rgb.b * 0.8)
+            };
+            return this.rgbToHex(darker.r, darker.g, darker.b);
+        }
+        return color;
+    }
+
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
 
     addEventMarker(data) {
