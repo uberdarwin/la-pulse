@@ -28,23 +28,32 @@ class DataSources {
         if (cached) return cached;
 
         try {
-            // LA City Open Data Portal - Traffic collision data
-            const response = await fetch('https://data.lacity.org/resource/d5tf-ez2w.json?$limit=100');
+            // Try to fetch real data, but fall back to mock data for demo
+            const response = await fetch('https://data.lacity.org/resource/d5tf-ez2w.json?$limit=20');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
-            const trafficData = data.map(item => ({
-                lat: parseFloat(item.latitude) || 34.0522,
-                lng: parseFloat(item.longitude) || -118.2437,
-                level: this.getTrafficLevel(item.collision_severity),
-                location: item.location_description || 'Unknown',
-                timestamp: item.date_occurred || new Date().toISOString(),
-                speed: Math.floor(Math.random() * 60) + 10 // Simulated speed
-            })).filter(item => this.isInTargetArea(item.lat, item.lng));
+            if (data && data.length > 0) {
+                const trafficData = data.map(item => ({
+                    lat: parseFloat(item.latitude) || 34.0522,
+                    lng: parseFloat(item.longitude) || -118.2437,
+                    level: this.getTrafficLevel(item.collision_severity),
+                    location: item.location_description || 'Unknown',
+                    timestamp: item.date_occurred || new Date().toISOString(),
+                    speed: Math.floor(Math.random() * 60) + 10 // Simulated speed
+                })).filter(item => this.isInTargetArea(item.lat, item.lng));
 
-            this.setCachedData(cacheKey, trafficData);
-            return trafficData;
+                this.setCachedData(cacheKey, trafficData);
+                return trafficData.length > 0 ? trafficData : this.generateMockTrafficData();
+            } else {
+                return this.generateMockTrafficData();
+            }
         } catch (error) {
-            console.error('Error fetching LA City traffic data:', error);
+            console.warn('Using mock traffic data due to API error:', error.message);
             return this.generateMockTrafficData();
         }
     }
@@ -138,24 +147,33 @@ class DataSources {
         if (cached) return cached;
 
         try {
-            // LA City construction permits
-            const response = await fetch('https://data.lacity.org/resource/yv23-pmwf.json?$limit=50');
+            // Try to fetch real data, but fall back to mock data for demo
+            const response = await fetch('https://data.lacity.org/resource/yv23-pmwf.json?$limit=20');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
-            const constructionData = data.map(item => ({
-                lat: parseFloat(item.latitude) || 34.0522,
-                lng: parseFloat(item.longitude) || -118.2437,
-                location: item.street_address || 'Unknown',
-                type: item.construction_type || 'General Construction',
-                startDate: item.issued_date || new Date().toISOString(),
-                endDate: item.expiration_date || 'TBD',
-                impact: 'Lane closures expected'
-            })).filter(item => this.isInTargetArea(item.lat, item.lng));
+            if (data && data.length > 0) {
+                const constructionData = data.map(item => ({
+                    lat: parseFloat(item.latitude) || 34.0522,
+                    lng: parseFloat(item.longitude) || -118.2437,
+                    location: item.street_address || 'Unknown',
+                    type: item.construction_type || 'General Construction',
+                    startDate: item.issued_date || new Date().toISOString(),
+                    endDate: item.expiration_date || 'TBD',
+                    impact: 'Lane closures expected'
+                })).filter(item => this.isInTargetArea(item.lat, item.lng));
 
-            this.setCachedData(cacheKey, constructionData);
-            return constructionData;
+                this.setCachedData(cacheKey, constructionData);
+                return constructionData.length > 0 ? constructionData : this.generateMockConstructionData();
+            } else {
+                return this.generateMockConstructionData();
+            }
         } catch (error) {
-            console.error('Error fetching construction data:', error);
+            console.warn('Using mock construction data due to API error:', error.message);
             return this.generateMockConstructionData();
         }
     }
