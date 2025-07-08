@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LA Pulse - East LA Traffic & Events Monitor</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>LA Pulse</h1>
+            <p>Real-time monitoring of East LA, Echo Park & Elysian Park</p>
+        </header>
+        
+        <div id="controls">
+            <div class="control-group">
+                <h3>Data Layers</h3>
+                <label><input type="checkbox" id="traffic-layer" checked> Traffic Data</label>
+                <label><input type="checkbox" id="events-layer" checked> Events</label>
+                <label><input type="checkbox" id="construction-layer" checked> Road Construction</label>
+                <label><input type="checkbox" id="signals-layer"> Cell/Internet Signals</label>
+            </div>
+            
+            <div class="control-group">
+                <h3>Filters</h3>
+                <select id="event-filter">
+                    <option value="all">All Events</option>
+                    <option value="sports">Sports</option>
+                    <option value="concerts">Concerts</option>
+                    <option value="festivals">Festivals</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button id="refresh-data">Refresh Data</button>
+                <button id="toggle-realtime">Enable Real-time</button>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div id="info-panel">
+            <div id="event-info">
+                <h3>Upcoming Events</h3>
+                <div id="events-list">Loading events...</div>
+            </div>
+            
+            <div id="traffic-info">
+                <h3>Traffic Status</h3>
+                <div id="traffic-status">Loading traffic data...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/config.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/data-sources.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
