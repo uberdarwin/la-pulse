@@ -107,6 +107,24 @@ button:active {
     transform: translateY(0);
 }
 
+.nav-button {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+}
+
+.nav-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(156, 39, 176, 0.3);
+}
+
 #map {
     grid-area: map;
     height: 100%;

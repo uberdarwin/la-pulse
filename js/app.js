@@ -123,27 +123,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapManager = new MapManager();
     const dataManager = new DataManager(mapManager);
 
+    // Initial data load
     dataManager.fetchData();
-    dataManager.startAutoRefresh();
+    
+    // Set up control handlers
+    setupControlHandlers(dataManager);
+    
+    console.log('LA Pulse initialized successfully!');
+});
 
+// Set up control event handlers
+function setupControlHandlers(dataManager) {
     // Refresh data manually
     document.getElementById('refresh-data').addEventListener('click', () => {
+        console.log('Manual refresh triggered');
         dataManager.fetchData();
     });
 
     // Toggle real-time updates
     let isRealTime = false;
     const toggleRealtimeButton = document.getElementById('toggle-realtime');
+    
     toggleRealtimeButton.addEventListener('click', () => {
         isRealTime = !isRealTime;
         toggleRealtimeButton.textContent = isRealTime ? 'Disable Real-time' : 'Enable Real-time';
+        
         if (isRealTime) {
             dataManager.startAutoRefresh();
+            toggleRealtimeButton.style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
         } else {
-            clearInterval(this.trafficInterval);
-            clearInterval(this.eventsInterval);
-            clearInterval(this.constructionInterval);
+            dataManager.stopAutoRefresh();
+            toggleRealtimeButton.style.background = 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)';
         }
     });
-});
+
+    // Event filter handler
+    document.getElementById('event-filter').addEventListener('change', (e) => {
+        const filter = e.target.value;
+        console.log('Event filter changed to:', filter);
+        
+        // Filter events based on category
+        dataManager.dataSources.fetchEvents().then(events => {
+            const filteredEvents = filter === 'all' ? events : events.filter(event => 
+                event.category.toLowerCase().includes(filter.toLowerCase())
+            );
+            dataManager.mapManager.updateEventsLayer(filteredEvents);
+        });
+    });
+
+    // Add click handlers for area navigation
+    addAreaNavigation(dataManager.mapManager);
+}
+
+// Add area navigation functionality
+function addAreaNavigation(mapManager) {
+    // Add navigation buttons to the controls
+    const controlsDiv = document.getElementById('controls');
+    const navigationDiv = document.createElement('div');
+    navigationDiv.className = 'control-group';
+    navigationDiv.innerHTML = `
+        <h3>Quick Navigation</h3>
+        <button id="goto-east-la" class="nav-button">East LA</button>
+        <button id="goto-echo-park" class="nav-button">Echo Park</button>
+        <button id="goto-elysian-park" class="nav-button">Elysian Park</button>
+    `;
+    
+    controlsDiv.appendChild(navigationDiv);
+    
+    // Add event listeners for navigation
+    document.getElementById('goto-east-la').addEventListener('click', () => {
+        mapManager.centerOnArea('EAST_LA');
+    });
+    
+    document.getElementById('goto-echo-park').addEventListener('click', () => {
+        mapManager.centerOnArea('ECHO_PARK');
+    });
+    
+    document.getElementById('goto-elysian-park').addEventListener('click', () => {
+        mapManager.centerOnArea('ELYSIAN_PARK');
+    });
+}
 
