@@ -78,30 +78,80 @@ class DataSources {
     // Generate realistic traffic data based on actual LA roads
     generateRealisticTrafficData() {
         const laRoads = [
-            // Focus on Sunset Blvd area (1827 W. Sunset Blvd, 90026)
-            { name: 'Sunset Blvd @ Silver Lake', lat: 34.0775, lng: -118.2653, baseSpeed: 25, segments: 5 },
-            { name: 'Sunset Blvd @ Micheltorena', lat: 34.0772, lng: -118.2640, baseSpeed: 25, segments: 3 },
-            { name: 'Sunset Blvd @ Baxter', lat: 34.0770, lng: -118.2670, baseSpeed: 25, segments: 4 },
-            { name: 'Sunset Blvd @ Laveta Terrace', lat: 34.0773, lng: -118.2680, baseSpeed: 25, segments: 3 },
-            { name: 'Sunset Blvd @ Easterly Terrace', lat: 34.0776, lng: -118.2630, baseSpeed: 25, segments: 4 },
+            // Sunset Blvd - main east-west corridor
+            { 
+                name: 'Sunset Blvd', 
+                coordinates: [
+                    [34.0770, -118.2700], // West end
+                    [34.0772, -118.2680], // Laveta Terrace
+                    [34.0773, -118.2670], // Baxter St
+                    [34.0775, -118.2653], // 1827 W. Sunset (target address)
+                    [34.0776, -118.2640], // Micheltorena St
+                    [34.0778, -118.2630], // Easterly Terrace
+                    [34.0780, -118.2620]  // East end
+                ],
+                baseSpeed: 25
+            },
             
-            // Cross streets near 1827 W. Sunset
-            { name: 'Micheltorena St', lat: 34.0785, lng: -118.2640, baseSpeed: 20, segments: 2 },
-            { name: 'Baxter St', lat: 34.0790, lng: -118.2670, baseSpeed: 20, segments: 2 },
-            { name: 'Laveta Terrace', lat: 34.0780, lng: -118.2680, baseSpeed: 15, segments: 2 },
-            { name: 'Silver Lake Blvd', lat: 34.0820, lng: -118.2650, baseSpeed: 30, segments: 3 },
-            { name: 'Glendale Blvd', lat: 34.0760, lng: -118.2580, baseSpeed: 35, segments: 4 },
+            // Cross streets (north-south)
+            {
+                name: 'Micheltorena St',
+                coordinates: [
+                    [34.0790, -118.2640], // North end
+                    [34.0776, -118.2640], // Sunset intersection
+                    [34.0760, -118.2640]  // South end
+                ],
+                baseSpeed: 20
+            },
+            {
+                name: 'Baxter St',
+                coordinates: [
+                    [34.0800, -118.2670], // North end
+                    [34.0773, -118.2670], // Sunset intersection
+                    [34.0750, -118.2670]  // South end
+                ],
+                baseSpeed: 20
+            },
+            {
+                name: 'Silver Lake Blvd',
+                coordinates: [
+                    [34.0850, -118.2650], // North end
+                    [34.0820, -118.2650], // Middle
+                    [34.0790, -118.2650], // Near Sunset
+                    [34.0760, -118.2650]  // South end
+                ],
+                baseSpeed: 30
+            },
+            {
+                name: 'Glendale Blvd',
+                coordinates: [
+                    [34.0800, -118.2580], // North end
+                    [34.0780, -118.2580], // Middle
+                    [34.0760, -118.2580], // Near area
+                    [34.0740, -118.2580]  // South end
+                ],
+                baseSpeed: 35
+            },
             
-            // Nearby major streets
-            { name: 'Temple St', lat: 34.0781, lng: -118.2376, baseSpeed: 30, segments: 3 },
-            { name: 'Beverly Blvd', lat: 34.0759, lng: -118.2870, baseSpeed: 30, segments: 4 },
-            { name: 'Melrose Ave', lat: 34.0837, lng: -118.2865, baseSpeed: 20, segments: 3 },
-            { name: 'Santa Monica Blvd', lat: 34.0901, lng: -118.2878, baseSpeed: 25, segments: 4 },
-            { name: 'Hollywood Blvd', lat: 34.1022, lng: -118.3267, baseSpeed: 20, segments: 5 },
-            
-            // Highways affecting area
-            { name: 'US-101 North', lat: 34.0928, lng: -118.2849, baseSpeed: 55, segments: 2 },
-            { name: 'I-5 North', lat: 34.0522, lng: -118.2437, baseSpeed: 65, segments: 2 }
+            // Parallel east-west streets
+            {
+                name: 'Temple St',
+                coordinates: [
+                    [34.0781, -118.2700], // West end
+                    [34.0781, -118.2650], // Middle
+                    [34.0781, -118.2600], // East end
+                ],
+                baseSpeed: 30
+            },
+            {
+                name: 'Beverly Blvd',
+                coordinates: [
+                    [34.0759, -118.2900], // West end
+                    [34.0759, -118.2850], // Middle
+                    [34.0759, -118.2800], // East end
+                ],
+                baseSpeed: 30
+            }
         ];
 
         const trafficData = [];
@@ -112,8 +162,8 @@ class DataSources {
             const isRushHour = (timeOfDay >= 7 && timeOfDay <= 9) || (timeOfDay >= 17 && timeOfDay <= 19);
             const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
             
-            // Create multiple segments per road
-            for (let i = 0; i < (road.segments || 1); i++) {
+            // Create traffic data for each coordinate point
+            road.coordinates.forEach((coord, i) => {
                 let speedMultiplier = 1;
                 if (isRushHour && !isWeekend) {
                     speedMultiplier = 0.2 + Math.random() * 0.6; // 20-80% of normal speed
@@ -126,19 +176,16 @@ class DataSources {
                 const currentSpeed = Math.max(3, Math.floor(road.baseSpeed * speedMultiplier));
                 const level = UTILS.getTrafficLevelFromSpeed(currentSpeed);
                 
-                // Create segment with slight position variation
-                const segmentOffset = 0.001 * i; // Spread segments along the road
-                
                 trafficData.push({
-                    lat: road.lat + (Math.random() - 0.5) * 0.001 + segmentOffset,
-                    lng: road.lng + (Math.random() - 0.5) * 0.001 + segmentOffset,
+                    lat: coord[0],
+                    lng: coord[1],
                     location: `${road.name} (Segment ${i + 1})`,
                     speed: currentSpeed,
                     level: level,
                     timestamp: new Date().toISOString(),
                     density: Math.floor(Math.random() * 100) + 1 // Traffic density 1-100
                 });
-            }
+            });
         });
         
         return trafficData.filter(item => this.isInTargetArea(item.lat, item.lng));

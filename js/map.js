@@ -15,6 +15,7 @@ class MapManager {
             signals: []
         };
         this.circles = [];
+        this.trafficPolylines = [];
         this.init();
     }
 
@@ -95,6 +96,14 @@ class MapManager {
     clearLayer(layerName) {
         this.layers[layerName].clearLayers();
         this.markers[layerName] = [];
+        
+        // Clear traffic polylines when clearing traffic layer
+        if (layerName === 'traffic') {
+            this.trafficPolylines.forEach(polyline => {
+                this.map.removeLayer(polyline);
+            });
+            this.trafficPolylines = [];
+        }
     }
 
     addTrafficMarker(data) {
@@ -249,7 +258,67 @@ class MapManager {
 
     updateTrafficLayer(trafficData) {
         this.clearLayer('traffic');
+        
+        // Group traffic data by road segments
+        const roadSegments = this.groupTrafficByRoad(trafficData);
+        
+        // Draw colored street segments
+        this.drawTrafficPolylines(roadSegments);
+        
+        // Add individual markers
         trafficData.forEach(data => this.addTrafficMarker(data));
+    }
+    
+    groupTrafficByRoad(trafficData) {
+        const segments = {};
+        
+        trafficData.forEach(data => {
+            const roadName = data.location.split(' (Segment')[0]; // Remove segment info
+            if (!segments[roadName]) {
+                segments[roadName] = [];
+            }
+            segments[roadName].push(data);
+        });
+        
+        return segments;
+    }
+    
+    drawTrafficPolylines(roadSegments) {
+        Object.entries(roadSegments).forEach(([roadName, segments]) => {
+            if (segments.length < 2) return; // Need at least 2 points for a line
+            
+            // Sort segments by position to create a logical path
+            segments.sort((a, b) => a.lat - b.lat);
+            
+            // Create polyline coordinates
+            const coordinates = segments.map(segment => [segment.lat, segment.lng]);
+            
+            // Calculate average traffic level for the road
+            const avgSpeed = segments.reduce((sum, seg) => sum + seg.speed, 0) / segments.length;
+            const avgLevel = UTILS.getTrafficLevelFromSpeed(avgSpeed);
+            const color = UTILS.getTrafficColor(avgLevel);
+            
+            // Create the polyline
+            const polyline = L.polyline(coordinates, {
+                color: color,
+                weight: 8,
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+            
+            polyline.bindPopup(`
+                <div>
+                    <h4>${roadName}</h4>
+                    <p><strong>Average Speed:</strong> ${Math.round(avgSpeed)} mph</p>
+                    <p><strong>Traffic Level:</strong> ${UTILS.getTrafficDescription(avgLevel)}</p>
+                    <p><strong>Segments:</strong> ${segments.length}</p>
+                </div>
+            `);
+            
+            polyline.addTo(this.map);
+            this.trafficPolylines.push(polyline);
+        });
     }
 
     updateEventsLayer(eventsData) {
